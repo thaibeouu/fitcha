@@ -11,14 +11,14 @@ def create_app(test_config=None):
     project_dir = os.path.dirname(os.path.abspath(__file__))
     flask_app = Flask(__name__)
     if test_config is None:
-        database_file = "sqlite:///{}".format(os.path.join(project_dir, "features.db"))
+        database_file = "sqlite:///{}".format(os.path.join(project_dir, "feature.db"))
         flask_app.config["SQLALCHEMY_DATABASE_URI"] = database_file
         flask_app.templates_auto_reload = True
         flask_app.debug = True
     else:
         flask_app.config.update(test_config)
         flask_app.testing = True
-        database_file = "sqlite:///{}".format(os.path.join(project_dir, "features_test.db"))
+        database_file = "sqlite:///{}".format(os.path.join(project_dir, "feature_test.db"))
         flask_app.config["SQLALCHEMY_DATABASE_URI"] = database_file
 
     @flask_app.route("/", methods=["GET"])
@@ -71,7 +71,6 @@ def create_app(test_config=None):
 
 def init_db():
     flask_db = SQLAlchemy(app)
-    flask_db.create_all()
 
     return flask_db
 
@@ -101,4 +100,4 @@ class Feature(db.Model):
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host='0.0.0.0')

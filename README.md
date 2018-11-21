@@ -46,3 +46,15 @@ Deployment
     
 The app is hosted [here](http://thaivu.cf). 
 
+
+Reflects
+--------
+
+To be honest I had not used either Flask/KnockoutJS or even nginx prior to this project,
+just your recruiting approach was quite interesting so I decided to invest my time in.
+Indeed it was a great opportunity for learning, I managed to walk through some tutorials and
+documentations to at least satisfy the business requirements. I also tried to 
+incorporate the testing part but encountered some issues along the way, then decided
+it was too time-consuming and moved on. All in all it was an enjoyable ride, thanks
+for designing this `test chamber`.
+
