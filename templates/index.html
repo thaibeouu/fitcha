@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fitcha - A neat platform for feature requests</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+          integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css?family=Noto+Sans+SC" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Amaranth" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+        }
+        h3 {
+            font-family: 'Amaranth', sans-serif;
+        }
+        .form-group.required label:after {
+            content: "*";
+            color: red;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row mt-4">
+        <div class="col-sm-3 mt-5">
+            <div class="position-relative">
+                <form data-bind="submit: addFeature">
+                    <div class="form-group required">
+                        <label for="title">Title</label>
+                        <input data-bind="value: newTitle" required type="text" class="form-control"
+                               placeholder="Title of the request">
+                    </div>
+                    <div class="form-group required">
+                        <label for="description">Description</label>
+                        <textarea data-bind="value: newDescription" required class="form-control"
+                                  placeholder="Description of the request"></textarea>
+                    </div>
+                    <div class="form-group required">
+                        <label for="client">Client</label>
+                        <select data-bind="value: newClient" required class="form-control">
+                            <option>Client A</option>
+                            <option>Client B</option>
+                            <option>Client C</option>
+                        </select>
+                    </div>
+                    <div class="form-group required">
+                        <label for="client_priority">Client Priority</label>
+                        <input data-bind="value: newClientPriority" required type="number" class="form-control"
+                               id="client_priority" placeholder="Priority of the request">
+                        <small class="form-text text-muted">Number only, 1 for highest priority</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputClientPriority">Target Date</label>
+                        <input data-bind="value: newTargetDate" type="date" class="form-control"
+                               placeholder="Target date for the request">
+                    </div>
+                    <div class="form-group required">
+                        <label for="product_area">Product Area</label>
+                        <select data-bind="value: newProductArea" required id="product_area" class="form-control">
+                            <option>Policies</option>
+                            <option>Billing</option>
+                            <option>Claims</option>
+                            <option>Reports</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+        <div class="col-sm-9">
+            <h3>Fitcha - Feature Requests</h3>
+            <table class="table table-hover table-striped table-sm">
+                <thead>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Title</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Client</th>
+                    <th scope="col">Client Priority</th>
+                    <th scope="col">Target Date</th>
+                    <th scope="col">Product Area</th>
+                    <th scope="col"></th>
+                </tr>
+                </thead>
+                <tbody data-bind="foreach: features, visible: features().length > 0">
+                <tr>
+                    <th data-bind="text: id" scope="row"></th>
+                    <td data-bind="text: title"></td>
+                    <td data-bind="text: description"></td>
+                    <td data-bind="text: client"></td>
+                    <td data-bind="text: client_priority"></td>
+                    <td data-bind="text: target_date"></td>
+                    <td data-bind="text: product_area"></td>
+                    <td>
+                        <button data-bind="click: $parent.deleteFeature" type="button" class="btn btn-danger btn-sm">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.2/knockout-min.js"></script>
+<script>
+    function Feature(item) {
+        this.id = ko.observable(item.id);
+        this.title = ko.observable(item.title);
+        this.description = ko.observable(item.description);
+        this.client = ko.observable(item.client);
+        this.client_priority = ko.observable(item.client_priority);
+        this.target_date = ko.observable(item.target_date);
+        this.product_area = ko.observable(item.product_area);
+    }
+
+    function FeatureListViewModel() {
+        let self = this;
+        self.features = ko.observableArray([]);
+        self.newTitle = ko.observable();
+        self.newDescription = ko.observable();
+        self.newClient = ko.observable();
+        self.newClientPriority = ko.observable();
+        self.newTargetDate = ko.observable();
+        self.newProductArea = ko.observable();
+
+        const getFeatures = () => $.getJSON('/features', response => {
+            const t = $.map(response, item => new Feature(item));
+            self.features(t);
+        });
+
+        getFeatures();
+
+        self.addFeature = () => $.ajax({
+            url: '/features/add',
+            contentType: 'application/json',
+            type: 'POST',
+            data: JSON.stringify({
+                'title': self.newTitle(),
+                'description': self.newDescription(),
+                'client': self.newClient(),
+                'client_priority': self.newClientPriority(),
+                'target_date': self.newTargetDate(),
+                'product_area': self.newProductArea(),
+            }),
+            success: () => getFeatures(),
+            error: (e) => console.error("ERROR", e)
+        });
+
+        self.deleteFeature = feature => {
+            $.ajax({
+                url: `features/delete?id=${feature.id()}`,
+                type: 'POST',
+                success: () => getFeatures(),
+                error: (e) => console.error("ERROR", e)
+            });
+        }
+    }
+
+    ko.applyBindings(new FeatureListViewModel());
+</script>
+</body>
+</html>
